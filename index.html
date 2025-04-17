@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced SQL Query Builder</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .left-panel {
+            width: 35%;
+        }
+
+        .right-panel {
+            width: 65%;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+            transition: border 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .generate-btn {
+            background: #27ae60;
+            color: white;
+        }
+
+        .generate-btn:hover {
+            background: #219653;
+        }
+
+        .popup-btn {
+            background: #3498db;
+            color: white;
+        }
+
+        .popup-btn:hover {
+            background: #2980b9;
+        }
+
+        .copy-btn {
+            background: #7f8c8d;
+            color: white;
+        }
+
+        .copy-btn:hover {
+            background: #6c7a7d;
+        }
+
+        .code-block {
+            background: #2d3436;
+            color: #dfe6e9;
+            padding: 16px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            white-space: pre-wrap;
+            margin: 15px 0;
+            min-height: 100px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            margin: 10% auto;
+            width: 450px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.3rem;
+        }
+
+        .close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #95a5a6;
+        }
+
+        .close:hover {
+            color: #7f8c8d;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .filter-row select, .filter-row input {
+            flex: 1;
+            margin: 0;
+            padding: 8px 12px;
+        }
+
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-buttons button {
+            margin: 0;
+        }
+
+        .add-more-btn {
+            background: #3498db;
+            color: white;
+        }
+
+        .apply-btn {
+            background: #27ae60;
+            color: white;
+        }
+
+        .add-more-btn:hover, .apply-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Applied filters display */
+        .applied-filters {
+            margin: 15px 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .applied-filter-item {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            border-left: 3px solid #3498db;
+        }
+
+        .remove-applied-filter {
+            color: #e74c3c;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .remove-applied-filter:hover {
+            background: #fdecea;
+        }
+
+        /* Section styling */
+        .section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title .badge {
+            background: #3498db;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .left-panel, .right-panel {
+                width: 100%;
+            }
+            .modal-content {
+                width: 90%;
+                margin: 20% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Left Panel -->
+        <div class="panel left-panel">
+            <h2>SQL Query Builder</h2>
+            
+            <div class="section">
+                <label for="tableName">Table Name:</label>
+                <input type="text" id="tableName" placeholder="Enter table name" value="categories">
+            </div>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span>Filters</span>
+                    <span class="badge" id="filterCount">0</span>
+                </div>
+                <button class="popup-btn" onclick="openModal('filterModal')">➕ Add Filter</button>
+                <ul class="applied-filters" id="appliedFilters"></ul>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <span>Joins</span>
+                    <span class="badge" id="joinCount">0</span>
+                </div>
+                <button class="popup-btn" onclick="openModal('joinModal')">➕ Add Join</button>
+                <ul class="applied-filters" id="appliedJoins"></ul>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Sort</div>
+                <button class="popup-btn" onclick="openModal('sortModal')">➕ Add Sort</button>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Group By</div>
+                <button class="popup-btn" onclick="openModal('groupByModal')">➕ Add Group</button>
+            </div>
+
+            <div class="section">
+                <label for="limit">Limit:</label>
+                <input type="number" id="limit" value="10">
+            </div>
+            
+            <button class="generate-btn" onclick="generateSQL()">Generate SQL</button>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="panel right-panel">
+            <h2>Generated SQL Query:</h2>
+            <div class="code-block" id="sqlOutput">SELECT * FROM `categories` LIMIT 10;</div>
+
+            <button class="copy-btn" onclick="copySQL()">📋 Copy SQL</button>
+        </div>
+    </div>
+
+    <!-- Filter Modal -->
+    <div id="filterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Filter</h2>
+                <span class="close" onclick="closeModal('filterModal')">&times;</span>
+            </div>
+            <div class="filter-container" id="filtersContainer">
+                <div class="filter-row">
+                    <select class="filter-table">
+                        <option value="categories">categories</option>
+                        <option value="products">products</option>
+                    </select>
+                    <select class="filter-column">
+                        <option value="">Select field</option>
+                        <option value="CategoryID">CategoryID</option>
+                        <option value="Name">Name</option>
+                        <option value="Description">Description</option>
+                    </select>
+                    <select class="filter-operator">
+                        <option value="=">=</option>
+                        <option value="!=">!=</option>
+                        <option value=">">></option>
+                        <option value="<"><</option>
+                        <option value="LIKE">LIKE</option>
+                        <option value="NOT LIKE">NOT LIKE</option>
+                    </select>
+                    <input type="text" placeholder="Value" class="filter-value">
+                    <button class="remove-btn" onclick="removeFilter(this)">×</button>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="add-more-btn" onclick="addFilter()">➕ Add More</button>
+                <button class="apply-btn" onclick="applyFilters()">✔ Apply Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join Modal -->
+    <div id="joinModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Join</h2>
+                <span class="close" onclick="closeModal('joinModal')">&times;</span>
+            </div>
+            <div class="filter-container" id="joinsContainer">
+                <div class="filter-row">
+                    <select class="join-type">
+                        <option value="INNER JOIN">INNER JOIN</option>
+                        <option value="LEFT JOIN">LEFT JOIN</option>
+                        <option value="RIGHT JOIN">RIGHT JOIN</option>
+                    </select>
+                    <select class="join-table">
+                        <option value="products">products</option>
+                        <option value="suppliers">suppliers</option>
+                    </select>
+                    <input type="text" placeholder="ON condition" class="join-condition">
+                    <button class="remove-btn" onclick="removeJoin(this)">×</button>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="add-more-btn" onclick="addJoin()">➕ Add More</button>
+                <button class="apply-btn" onclick="applyJoins()">✔ Apply Joins</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let filters = [];
+        let joins = [];
+        let sorts = [];
+        let groups = [];
+        let selectedColumns = ['*'];
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = "block";
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        // Filter functions
+        function addFilter() {
+            const container = document.getElementById('filtersContainer');
+            const newRow = document.createElement('div');
+            newRow.className = 'filter-row';
+            newRow.innerHTML = `
+                <select class="filter-table">
+                    <option value="categories">categories</option>
+                    <option value="products">products</option>
+                </select>
+                <select class="filter-column">
+                    <option value="">Select field</option>
+                    <option value="CategoryID">CategoryID</option>
+                    <option value="Name">Name</option>
+                    <option value="Description">Description</option>
+                </select>
+                <select class="filter-operator">
+                    <option value="=">=</option>
+                    <option value="!=">!=</option>
+                    <option value=">">></option>
+                    <option value="<"><</option>
+                    <option value="LIKE">LIKE</option>
+                    <option value="NOT LIKE">NOT LIKE</option>
+                </select>
+                <input type="text" placeholder="Value" class="filter-value">
+                <button class="remove-btn" onclick="removeFilter(this)">×</button>
+            `;
+            container.appendChild(newRow);
+        }
+
+        function removeFilter(button) {
+            button.parentElement.remove();
+        }
+
+        function applyFilters() {
+            filters = [];
+            const rows = document.querySelectorAll('#filtersContainer .filter-row');
+            
+            rows.forEach(row => {
+                const table = row.querySelector('.filter-table').value;
+                const column = row.querySelector('.filter-column').value;
+                const operator = row.querySelector('.filter-operator').value;
+                const value = row.querySelector('.filter-value').value;
+                
+                if (column && value) {
+                    filters.push({ table, column, operator, value });
+                }
+            });
+            
+            updateAppliedFiltersDisplay();
+            closeModal('filterModal');
+            generateSQL();
+        }
+
+        function updateAppliedFiltersDisplay() {
+            const container = document.getElementById('appliedFilters');
+            container.innerHTML = '';
+            
+            filters.forEach((filter, index) => {
+                const li = document.createElement('li');
+                li.className = 'applied-filter-item';
+                li.innerHTML = `
+                    <span>${filter.table}.${filter.column} ${filter.operator} ${filter.value}</span>
+                    <span class="remove-applied-filter" onclick="removeAppliedFilter(${index})">×</span>
+                `;
+                container.appendChild(li);
+            });
+            
+            document.getElementById('filterCount').textContent = filters.length;
+        }
+
+        function removeAppliedFilter(index) {
+            filters.splice(index, 1);
+            updateAppliedFiltersDisplay();
+            generateSQL();
+        }
+
+        // Join functions
+        function addJoin() {
+            const container = document.getElementById('joinsContainer');
+            const newRow = document.createElement('div');
+            newRow.className = 'filter-row';
+            newRow.innerHTML = `
+                <select class="join-type">
+                    <option value="INNER JOIN">INNER JOIN</option>
+                    <option value="LEFT JOIN">LEFT JOIN</option>
+                    <option value="RIGHT JOIN">RIGHT JOIN</option>
+                </select>
+                <select class="join-table">
+                    <option value="products">products</option>
+                    <option value="suppliers">suppliers</option>
+                </select>
+                <input type="text" placeholder="ON condition" class="join-condition">
+                <button class="remove-btn" onclick="removeJoin(this)">×</button>
+            `;
+            container.appendChild(newRow);
+        }
+
+        function removeJoin(button) {
+            button.parentElement.remove();
+        }
+
+        function applyJoins() {
+            joins = [];
+            const rows = document.querySelectorAll('#joinsContainer .filter-row');
+            
+            rows.forEach(row => {
+                const type = row.querySelector('.join-type').value;
+                const table = row.querySelector('.join-table').value;
+                const condition = row.querySelector('.join-condition').value;
+                
+                if (table && condition) {
+                    joins.push({ type, table, condition });
+                }
+            });
+            
+            updateAppliedJoinsDisplay();
+            closeModal('joinModal');
+            generateSQL();
+        }
+
+        function updateAppliedJoinsDisplay() {
+            const container = document.getElementById('appliedJoins');
+            container.innerHTML = '';
+            
+            joins.forEach((join, index) => {
+                const li = document.createElement('li');
+                li.className = 'applied-filter-item';
+                li.innerHTML = `
+                    <span>${join.type} ${join.table} ON ${join.condition}</span>
+                    <span class="remove-applied-filter" onclick="removeAppliedJoin(${index})">×</span>
+                `;
+                container.appendChild(li);
+            });
+            
+            document.getElementById('joinCount').textContent = joins.length;
+        }
+
+        function removeAppliedJoin(index) {
+            joins.splice(index, 1);
+            updateAppliedJoinsDisplay();
+            generateSQL();
+        }
+
+        // SQL Generation
+        function generateSQL() {
+            const table = document.getElementById('tableName').value.trim() || 'categories';
+            const limit = document.getElementById('limit').value || 10;
+            
+            // SELECT clause
+            let selectClause = 'SELECT ' + selectedColumns.join(', ');
+            
+            // FROM clause
+            let fromClause = ` FROM \`${table}\``;
+            
+            // JOIN clauses
+            let joinClauses = '';
+            joins.forEach(join => {
+                joinClauses += ` ${join.type} \`${join.table}\` ON ${join.condition}`;
+            });
+            
+            // WHERE clause
+            let whereClause = '';
+            if (filters.length > 0) {
+                const conditions = filters.map(filter => {
+                    return `\`${filter.table}\`.\`${filter.column}\` ${filter.operator} '${filter.value}'`;
+                });
+                whereClause = ' WHERE ' + conditions.join(' AND ');
+            }
+            
+            // LIMIT clause
+            const limitClause = ` LIMIT ${limit}`;
+            
+            // Combine all clauses
+            const query = selectClause + fromClause + joinClauses + whereClause + limitClause + ';';
+            
+            document.getElementById('sqlOutput').textContent = query;
+        }
+
+        // Copy to clipboard
+        function copySQL() {
+            navigator.clipboard.writeText(document.getElementById('sqlOutput').textContent)
+                .then(() => alert('SQL copied to clipboard!'))
+                .catch(err => alert('Failed to copy: ' + err));
+        }
+
+        // Initialize with one empty row in each modal
+        window.onload = function() {
+            // Add initial empty filter row if none exists
+            if (document.querySelectorAll('#filtersContainer .filter-row').length === 0) {
+                addFilter();
+            }
+            
+            // Add initial empty join row if none exists
+            if (document.querySelectorAll('#joinsContainer .filter-row').length === 0) {
+                addJoin();
+            }
+            
+            generateSQL();
+        };
+    </script>
+</body>
+</html>
