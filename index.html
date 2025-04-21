@@ -4,638 +4,1287 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enhanced SQL Query Builder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
+        /* Base Styles */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            background-color: #f5f7fa;
             color: #333;
         }
 
-        .container {
+        .app-container {
             display: flex;
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
+            flex-direction: column;
+            height: 100vh;
         }
 
-        .panel {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        /* Tabs Styles */
+        .tabs-container {
+            background-color: #2c3e50;
+            padding: 0 20px;
         }
 
-        .left-panel {
-            width: 35%;
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #34495e;
         }
 
-        .right-panel {
-            width: 65%;
-        }
-
-        h2 {
-            color: #2c3e50;
-            margin-top: 0;
-            font-size: 1.5rem;
-        }
-
-        label {
-            display: block;
-            margin: 15px 0 8px;
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 0.9rem;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            box-sizing: border-box;
-            transition: border 0.2s;
-        }
-
-        input:focus, select:focus {
-            border-color: #3498db;
-            outline: none;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 8px;
+        .tab-button {
+            background: none;
             border: none;
-            border-radius: 6px;
+            color: #ecf0f1;
+            padding: 15px 20px;
             cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 600;
-            transition: all 0.2s;
+            font-size: 14px;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
         }
 
-        .generate-btn {
-            background: #27ae60;
-            color: white;
+        .tab-button:hover {
+            background-color: #34495e;
         }
 
-        .generate-btn:hover {
-            background: #219653;
-        }
-
-        .popup-btn {
-            background: #3498db;
-            color: white;
-        }
-
-        .popup-btn:hover {
-            background: #2980b9;
-        }
-
-        .copy-btn {
-            background: #7f8c8d;
-            color: white;
-        }
-
-        .copy-btn:hover {
-            background: #6c7a7d;
-        }
-
-        .code-block {
-            background: #2d3436;
-            color: #dfe6e9;
-            padding: 16px;
-            border-radius: 6px;
-            font-family: 'Consolas', 'Monaco', monospace;
-            white-space: pre-wrap;
-            margin: 15px 0;
-            min-height: 100px;
-            overflow-x: auto;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(2px);
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 25px;
-            margin: 10% auto;
-            width: 450px;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            color: #2c3e50;
-            font-size: 1.3rem;
-        }
-
-        .close {
-            font-size: 24px;
-            cursor: pointer;
-            color: #95a5a6;
-        }
-
-        .close:hover {
-            color: #7f8c8d;
-        }
-
-        .filter-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
-            align-items: center;
-        }
-
-        .filter-row select, .filter-row input {
-            flex: 1;
-            margin: 0;
-            padding: 8px 12px;
-        }
-
-        .remove-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            cursor: pointer;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .remove-btn:hover {
-            background: #c0392b;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .action-buttons button {
-            margin: 0;
-        }
-
-        .add-more-btn {
-            background: #3498db;
-            color: white;
-        }
-
-        .apply-btn {
-            background: #27ae60;
-            color: white;
-        }
-
-        .add-more-btn:hover, .apply-btn:hover {
-            opacity: 0.9;
-        }
-
-        /* Applied filters display */
-        .applied-filters {
-            margin: 15px 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .applied-filter-item {
-            background: #f8f9fa;
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.85rem;
-            border-left: 3px solid #3498db;
-        }
-
-        .remove-applied-filter {
-            color: #e74c3c;
-            cursor: pointer;
+        .tab-button.active {
+            border-bottom: 3px solid #3498db;
+            background-color: #34495e;
             font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 4px;
         }
 
-        .remove-applied-filter:hover {
-            background: #fdecea;
+        /* Tab Content Styles */
+        .tab-content-container {
+            flex: 1;
+            overflow: hidden;
         }
 
-        /* Section styling */
+        .tab-content {
+            display: none;
+            height: 100%;
+            overflow: auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Query Builder Layout */
+        .container {
+            display: flex;
+            height: 100%;
+            gap: 20px;
+        }
+
+        .panel {
+            flex: 1;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+        }
+
+        .left-panel {
+            max-width: 400px;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Form Elements */
         .section {
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 1px solid #eee;
         }
 
-        .section:last-child {
-            border-bottom: none;
-        }
-
         .section-title {
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 10px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
+            margin-bottom: 10px;
         }
 
-        .section-title .badge {
-            background: #3498db;
+        .badge {
+            background-color: #3498db;
             color: white;
             padding: 2px 8px;
             border-radius: 10px;
-            font-size: 0.7rem;
+            font-size: 12px;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            .left-panel, .right-panel {
-                width: 100%;
-            }
-            .modal-content {
-                width: 90%;
-                margin: 20% auto;
-            }
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Buttons */
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .generate-btn {
+            background-color: #27ae60;
+            color: white;
+            width: 100%;
+        }
+
+        .generate-btn:hover {
+            background-color: #219653;
+        }
+
+        .popup-btn {
+            background-color: #3498db;
+            color: white;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .popup-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .copy-btn {
+            background-color: #7f8c8d;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background-color: #95a5a6;
+        }
+
+        /* Code Block */
+        .code-block {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            /* flex-grow: -10; */
+            height: 10%;
+            overflow: auto;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            width: 600px;
+            max-width: 90%;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+
+        .close:hover {
+            color: #2c3e50;
+        }
+
+        /* Filter/Sort/Join Rows */
+        .filter-row, .sort-row, .join-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .where-label {
+            background-color: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .remove-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .add-more-btn {
+            background-color: #3498db;
+            color: white;
+            flex: 1;
+        }
+
+        .add-more-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .apply-btn {
+            background-color: #27ae60;
+            color: white;
+            flex: 1;
+        }
+
+        .apply-btn:hover {
+            background-color: #219653;
+        }
+
+        /* Applied Items */
+        .applied-filters, .applied-sorts, .applied-joins {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .applied-filter-item, .applied-sort-item, .applied-join-item {
+            background-color: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            border-left: 3px solid #3498db;
+        }
+
+        .remove-applied-filter, .remove-applied-sort, .remove-applied-join {
+            color: #e74c3c;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Schema Explorer */
+        .schema-explorer {
+            display: flex;
+            height: 100%;
+        }
+
+        .schema-tables {
+            width: 250px;
+            border-right: 1px solid #eee;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .schema-table {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .schema-table:hover {
+            background-color: #f0f0f0;
+        }
+
+        .schema-table.active {
+            background-color: #e3f2fd;
+            font-weight: bold;
+        }
+
+        .schema-columns {
+            flex: 1;
+            padding-left: 15px;
+            overflow-y: auto;
+        }
+
+        .schema-column {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        /* Notes */
+        .notes-textarea {
+            width: 100%;
+            height: 70%;
+            padding: 10px;
+            border: 1px solid #f5e5e5;
+            border-radius: 4px;
+            resize: none;
+            font-family: inherit;
+        }
+
+        /* Iframe */
+        .iframe-container {
+            height: calc(100vh - 100px);
+            margin-top: 15px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Table selector */
+        .table-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .table-selector select {
+            flex: 1;
+        }
+        
+        .table-selector button {
+            width: auto;
+            padding: 8px 12px;
+            background-color: #3498db;
+            color: white;
+        }
+        
+        /* Improved dropdowns */
+        select {
+            background-color: #fff;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+            appearance: none;
+            padding-right: 30px;
+        }
+        
+        /* Column selection */
+        .column-selection {
+            margin-top: 10px;
+        }
+        
+        .column-checkboxes {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        
+        .column-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+        }
+        
+        .column-checkbox input {
+            width: auto;
+            margin-right: 8px;
+            margin-bottom: 0;
+        }
+        
+        .select-all-columns {
+            font-size: 12px;
+            color: #3498db;
+            cursor: pointer;
+            margin-bottom: 5px;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <!-- Left Panel -->
-        <div class="panel left-panel">
+  <div class="app-container">
+    <div class="tabs-container">
+      <div class="tabs">
+        <button class="tab-button active" data-tab="query-builder">
+          <i class="fas fa-database"></i> SQL Query Builder
+        </button>
+        <button class="tab-button" data-tab="schema-explorer">
+          <i class="fas fa-table"></i> Database Schema Explorer
+        </button>
+        <button class="tab-button" data-tab="sticky-notes">
+          <i class="fas fa-sticky-note"></i> Sticky Notes
+        </button>
+        <button class="tab-button" data-tab="iframe-tab">
+          <i class="fas fa-external-link-alt"></i> External View
+        </button>
+      </div>
+    </div>
+    
+    <div class="tab-content-container">
+      <!-- Query Builder Tab -->
+      <div id="query-builder" class="tab-content active">
+        <div class="container">
+          <!-- Left Panel -->
+          <div class="panel left-panel">
             <h2>SQL Query Builder</h2>
+
+            <!-- <div class="sidebar-section">
+              <label for="table-select"><h4>Select Table</h4></label>
+              <select id="table-select" class="form-select">
+                <option value="" disabled selected>Select a table</option>
+              </select>
+            </div> -->
+
             
             <div class="section">
-                <label for="tableName">Table Name:</label>
-                <input type="text" id="tableName" placeholder="Enter table name" value="categories">
+              <div class="table-selector">
+                <select id="tableName">
+                  <option value="">Select a table</option>
+                </select>
+              
+              </div>
+              
+              <div class="column-selection">
+                <div class="select-all-columns" onclick="toggleAllColumns()">Select/Deselect All</div>
+                <div class="column-checkboxes" id="columnCheckboxes">
+                  <!-- Columns will be populated here -->
+                </div>
+              </div>
             </div>
             
             <div class="section">
-                <div class="section-title">
-                    <span>Filters</span>
-                    <span class="badge" id="filterCount">0</span>
-                </div>
-                <button class="popup-btn" onclick="openModal('filterModal')">➕ Add Filter</button>
-                <ul class="applied-filters" id="appliedFilters"></ul>
+              <div class="section-title">
+                <span>Filters</span>
+                <span class="badge" id="filterCount">0</span>
+              </div>
+              <button class="popup-btn" onclick="openModal('filterModal')">➕ Add Filter</button>
+              <ul class="applied-filters" id="appliedFilters"></ul>
             </div>
 
             <div class="section">
-                <div class="section-title">
-                    <span>Joins</span>
-                    <span class="badge" id="joinCount">0</span>
-                </div>
-                <button class="popup-btn" onclick="openModal('joinModal')">➕ Add Join</button>
-                <ul class="applied-filters" id="appliedJoins"></ul>
+              <div class="section-title">
+                <span>Joins</span>
+                <span class="badge" id="joinCount">0</span>
+              </div>
+              <button class="popup-btn" onclick="openModal('joinModal')">➕ Add Join</button>
+              <ul class="applied-joins" id="appliedJoins"></ul>
             </div>
 
             <div class="section">
-                <div class="section-title">Sort</div>
-                <button class="popup-btn" onclick="openModal('sortModal')">➕ Add Sort</button>
+              <div class="section-title">
+                <span>Sort</span>
+                <span class="badge" id="sortCount">0</span>
+              </div>
+              <button class="popup-btn" onclick="openModal('sortModal')">➕ Add Sort</button>
+              <ul class="applied-sorts" id="appliedSorts"></ul>
             </div>
 
             <div class="section">
-                <div class="section-title">Group By</div>
-                <button class="popup-btn" onclick="openModal('groupByModal')">➕ Add Group</button>
-            </div>
-
-            <div class="section">
-                <label for="limit">Limit:</label>
-                <input type="number" id="limit" value="10">
+              <label for="limit">Limit:</label>
+              <input type="number" id="limit" value="10">
             </div>
             
             <button class="generate-btn" onclick="generateSQL()">Generate SQL</button>
-        </div>
+          </div>
 
-        <!-- Right Panel -->
-        <div class="panel right-panel">
+          <!-- Right Panel -->
+          <div class="panel right-panel">
             <h2>Generated SQL Query:</h2>
             <div class="code-block" id="sqlOutput">SELECT * FROM `categories` LIMIT 10;</div>
-
             <button class="copy-btn" onclick="copySQL()">📋 Copy SQL</button>
+          </div>
         </div>
-    </div>
-
-    <!-- Filter Modal -->
-    <div id="filterModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Add Filter</h2>
-                <span class="close" onclick="closeModal('filterModal')">&times;</span>
-            </div>
-            <div class="filter-container" id="filtersContainer">
-                <div class="filter-row">
-                    <select class="filter-table">
-                        <option value="categories">categories</option>
-                        <option value="products">products</option>
-                    </select>
-                    <select class="filter-column">
-                        <option value="">Select field</option>
-                        <option value="CategoryID">CategoryID</option>
-                        <option value="Name">Name</option>
-                        <option value="Description">Description</option>
-                    </select>
-                    <select class="filter-operator">
-                        <option value="=">=</option>
-                        <option value="!=">!=</option>
-                        <option value=">">></option>
-                        <option value="<"><</option>
-                        <option value="LIKE">LIKE</option>
-                        <option value="NOT LIKE">NOT LIKE</option>
-                    </select>
-                    <input type="text" placeholder="Value" class="filter-value">
-                    <button class="remove-btn" onclick="removeFilter(this)">×</button>
-                </div>
-            </div>
-            <div class="action-buttons">
-                <button class="add-more-btn" onclick="addFilter()">➕ Add More</button>
-                <button class="apply-btn" onclick="applyFilters()">✔ Apply Filters</button>
-            </div>
+      </div>
+      
+      <!-- Schema Explorer Tab -->
+      <div id="schema-explorer" class="tab-content">
+        <div class="schema-explorer">
+          <div class="schema-tables" id="schemaTables">
+            <!-- Tables will be populated by JavaScript -->
+          </div>
+          <div class="schema-columns" id="schemaColumns">
+            <p>Select a table to view its columns</p>
+          </div>
         </div>
-    </div>
-
-    <!-- Join Modal -->
-    <div id="joinModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Add Join</h2>
-                <span class="close" onclick="closeModal('joinModal')">&times;</span>
-            </div>
-            <div class="filter-container" id="joinsContainer">
-                <div class="filter-row">
-                    <select class="join-type">
-                        <option value="INNER JOIN">INNER JOIN</option>
-                        <option value="LEFT JOIN">LEFT JOIN</option>
-                        <option value="RIGHT JOIN">RIGHT JOIN</option>
-                    </select>
-                    <select class="join-table">
-                        <option value="products">products</option>
-                        <option value="suppliers">suppliers</option>
-                    </select>
-                    <input type="text" placeholder="ON condition" class="join-condition">
-                    <button class="remove-btn" onclick="removeJoin(this)">×</button>
-                </div>
-            </div>
-            <div class="action-buttons">
-                <button class="add-more-btn" onclick="addJoin()">➕ Add More</button>
-                <button class="apply-btn" onclick="applyJoins()">✔ Apply Joins</button>
-            </div>
+      </div>
+      
+      <!-- Sticky Notes Tab -->
+      <div id="sticky-notes" class="tab-content">
+        <h2>Sticky Notes</h2>
+        <textarea class="notes-textarea" id="queryNotes" placeholder="Add your notes here..."></textarea>
+      </div>
+      
+      <!-- External View Tab -->
+      <div id="iframe-tab" class="tab-content">
+        <h2>External Database Documentation</h2>
+        <div class="iframe-container">
+          <iframe src="https://zohosde.com" frameborder="0"></iframe>
         </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // State management
-        let filters = [];
-        let joins = [];
-        let sorts = [];
-        let groups = [];
-        let selectedColumns = ['*'];
+  <!-- Filter Modal -->
+  <div id="filterModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add Filter Conditions</h2>
+        <span class="close" onclick="closeModal('filterModal')">&times;</span>
+      </div>
+      <div class="filter-container" id="filtersContainer">
+        <div class="filter-row">
+          <div class="where-label">WHERE</div>
+          <select class="filter-column" id="filterColumnSelect">
+            <option value="">Select column</option>
+          </select>
+          <select class="filter-operator">
+            <option value="=">=</option>
+            <option value="!=">!=</option>
+            <option value=">">></option>
+            <option value="<"><</option>
+            <option value="LIKE">LIKE</option>
+            <option value="NOT LIKE">NOT LIKE</option>
+            <option value="IN">IN</option>
+            <option value="NOT IN">NOT IN</option>
+          </select>
+          <input type="text" class="filter-value" placeholder="Value">
+          <button class="remove-btn" onclick="removeFilter(this)">×</button>
+        </div>
+      </div>
+      <div class="action-buttons">
+        <button class="add-more-btn" onclick="addFilter()">➕ Add Condition</button>
+        <button class="apply-btn" onclick="applyFilters()">✔ Apply Filters</button>
+      </div>
+    </div>
+  </div>
 
-        // Modal functions
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = "block";
+  <!-- Sort Modal -->
+  <div id="sortModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add Sort</h2>
+        <span class="close" onclick="closeModal('sortModal')">&times;</span>
+      </div>
+      <div class="sort-container" id="sortsContainer">
+        <div class="sort-row">
+          <div class="where-label">ORDER BY</div>
+          <select class="sort-column" id="sortColumnSelect">
+            <option value="">Select column</option>
+          </select>
+          <select class="sort-direction">
+            <option value="ASC">ASC</option>
+            <option value="DESC">DESC</option>
+          </select>
+          <button class="remove-btn" onclick="removeSort(this)">×</button>
+        </div>
+      </div>
+      <div class="action-buttons">
+        <button class="add-more-btn" onclick="addSort()">➕ Add Sort</button>
+        <button class="apply-btn" onclick="applySorts()">✔ Apply Sort</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Join Modal -->
+  <div id="joinModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add Join</h2>
+        <span class="close" onclick="closeModal('joinModal')">&times;</span>
+      </div>
+      <div class="join-container" id="joinsContainer">
+        <div id="noJoinsMessage" class="no-joins">No joins added yet</div>
+        <div id="joinsList" style="display: none;">
+          <div class="join-preview" id="joinPreview"></div>
+          <div class="join-row">
+            <select class="join-type">
+              <option value="INNER JOIN">INNER JOIN</option>
+              <option value="LEFT JOIN">LEFT JOIN</option>
+              <option value="RIGHT JOIN">RIGHT JOIN</option>
+            </select>
+            <select class="join-table" id="joinTableSelect">
+              <option value="">Select table</option>
+            </select>
+            <div class="join-divider">ON</div>
+            <select class="join-column" id="joinColumnSelect">
+              <option value="">Main table column</option>
+            </select>
+            <select class="join-operator">
+              <option value="=">=</option>
+              <option value="!=">!=</option>
+            </select>
+            <select class="join-foreign-column" id="joinForeignColumnSelect">
+              <option value="">Joined table column</option>
+            </select>
+            <button class="remove-btn" onclick="removeJoin(this)">×</button>
+          </div>
+        </div>
+      </div>
+      <div class="action-buttons">
+        <button class="add-more-btn" onclick="addJoin()">➕ Add Join</button>
+        <button class="apply-btn" onclick="applyJoins()">✔ Apply Joins</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Database schema - sample data
+    const databaseSchema = {
+  "CrmCaseEscalationRules": ["RULEID", "RULENAME", "ACTIVE", "CREATEDBY", "CREATEDON"],
+  "CrmCanvasRule": ["CANVASRULEID", "CANVASRULENAME", "QUERYID", "TABID", "STATUS", "CREATEDBY", "CREATEDTIME", "MODIFIEDBY", "MODIFIEDTIME", "SOURCE"],
+  "CrmMailContentFailedInfo": ["USERID", "CRMMAILUID", "FAILEDTYPE", "MODIFIEDTIME"],
+  "CrmCalendarView": ["CALENDAR_VIEW_ID", "USERID", "VIEW_NAME", "SELECTED_USERS_ID", "SELECTED_GROUPS_ID", "TYPE", "CATEGORY", "ORDER", "LAST_VIEWED_ON", "CREATED_ON", "MODIFIED_ON"],
+  "CrmUserActions": ["ACTIONID", "USERID", "ACTIONTYPE", "ACTIONINFO", "ACTIONTIME", "FEATURETYPE"],
+  "CallNode": ["NODEID", "CALLFLOWID", "ISDRAFT", "NODENAME", "NODETYPE", "NODEPROPERTIES", "GROUPID", "USERID", "AUDIOFILEID", "NODEPOSITION", "PHONENUMBERID"],
+  "CPQPriceRule": ["PRICERULEID", "PRICERULENAME", "DESCRIPTION", "ACTION_TYPE", "EXECUTE_ON", "PARENT_TABID", "PARENT_LAYOUTID", "ENTITY_LOOKUPID", "FIELDID", "FIELD_TABID", "RANGE_FIELDID", "RANGE_FIELD_TABID", "QUERYID", "SEQUENCE_NO", "RULESTATUS", "CREATEDBY", "CREATEDON", "MODIFIEDBY", "MODIFIEDON"],
+  "ActorClusterOrgMeta": ["ORG_META_ID", "NAMESPACE_ID", "CONTROLLER_STATUS"]
+};
+
+
+
+
+
+    // Current state
+    let currentTable = "categories";
+    let filters = [];
+    let joins = [];
+    let sorts = [];
+    let selectedColumns = ['*'];
+
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize UI components
+      initializeTabs();
+      initializeSchemaExplorer();
+      initializeQueryBuilder();
+      
+      // Generate initial SQL
+      generateSQL();
+    });
+
+    function initializeTabs() {
+      //debugger;
+      // Tab switching functionality
+      const tabButtons = document.querySelectorAll('.tab-button');
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+          
+          this.classList.add('active');
+          document.getElementById(this.getAttribute('data-tab')).classList.add('active');
+        });
+      });
+    }
+
+    function initializeQueryBuilder() 
+    {
+      // Populate the table dropdown
+      populateTableDropdown();
+      
+      // Set default table selection
+      if (document.getElementById('tableName')) {
+        document.getElementById('tableName').value = currentTable;
+        updateColumnSelection(currentTable);
+      }
+    }
+
+    // Populate the table dropdown in query builder
+    function populateTableDropdown() {
+      const tableSelect = document.getElementById('tableName');
+      if (!tableSelect) return;
+      
+      tableSelect.innerHTML = '<option value="">Select a table</option>';
+      
+      // Add all tables from schema
+      for (const tableName in databaseSchema) {
+        const option = document.createElement('option');
+        option.value = tableName;
+        option.textContent = tableName;
+        tableSelect.appendChild(option);
+      }
+      
+      // Handle table selection change
+      tableSelect.addEventListener('change', function() {
+        if (this.value) {
+          currentTable = this.value;
+          updateColumnSelection(this.value);
+          updateColumnDropdowns(this.value);
+          generateSQL();
+          
+          // Sync with schema explorer
+          syncSchemaExplorerSelection(this.value);
         }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = "none";
+      });
+    }
+    
+    // Sync schema explorer selection with query builder
+    function syncSchemaExplorerSelection(tableName) {
+      const schemaTables = document.querySelectorAll('.schema-table');
+      schemaTables.forEach(table => {
+        table.classList.remove('active');
+        if (table.textContent === tableName) {
+          table.classList.add('active');
+          showTableColumns(tableName);
         }
+      });
+    }
 
-        // Filter functions
-        function addFilter() {
-            const container = document.getElementById('filtersContainer');
-            const newRow = document.createElement('div');
-            newRow.className = 'filter-row';
-            newRow.innerHTML = `
-                <select class="filter-table">
-                    <option value="categories">categories</option>
-                    <option value="products">products</option>
-                </select>
-                <select class="filter-column">
-                    <option value="">Select field</option>
-                    <option value="CategoryID">CategoryID</option>
-                    <option value="Name">Name</option>
-                    <option value="Description">Description</option>
-                </select>
-                <select class="filter-operator">
-                    <option value="=">=</option>
-                    <option value="!=">!=</option>
-                    <option value=">">></option>
-                    <option value="<"><</option>
-                    <option value="LIKE">LIKE</option>
-                    <option value="NOT LIKE">NOT LIKE</option>
-                </select>
-                <input type="text" placeholder="Value" class="filter-value">
-                <button class="remove-btn" onclick="removeFilter(this)">×</button>
-            `;
-            container.appendChild(newRow);
+    // Initialize schema explorer with tables and columns
+
+
+    // Update query builder when table is selected from schema explorer
+    function selectTableForQueryBuilder(tableName) {
+      currentTable = tableName;
+      
+      // Update table dropdown selection
+      const tableSelect = document.getElementById('tableName');
+      if (tableSelect) {
+        tableSelect.value = tableName;
+      }
+      
+      updateColumnSelection(tableName);
+      updateColumnDropdowns(tableName);
+      generateSQL();
+    }
+
+    // Show columns for a specific table in schema explorer
+    function showTableColumns(tableName) {
+      const columnsContainer = document.getElementById('schemaColumns');
+      if (!columnsContainer) return;
+      
+      columnsContainer.innerHTML = `<h3>${tableName} Columns</h3>`;
+      
+      databaseSchema[tableName].forEach(column => {
+        const columnElement = document.createElement('div');
+        columnElement.className = 'schema-column';
+        columnElement.textContent = column;
+        columnsContainer.appendChild(columnElement);
+      });
+    }
+
+    // Update column selection checkboxes in query builder
+    function updateColumnSelection(tableName) {
+      const columns = databaseSchema[tableName] || [];
+      const container = document.getElementById('columnCheckboxes');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      // Add a checkbox for each column
+      columns.forEach(column => {
+        const checkboxDiv = document.createElement('div');
+        checkboxDiv.className = 'column-checkbox';
+        checkboxDiv.innerHTML = `
+          <input type="checkbox" id="col_${column}" value="${column}" checked 
+                 onchange="updateSelectedColumns()">
+          <label for="col_${column}">${column}</label>
+        `;
+        container.appendChild(checkboxDiv);
+      });
+      
+      // Update selected columns array
+      updateSelectedColumns();
+    }
+    
+    // Update the selected columns array based on checkboxes
+    function updateSelectedColumns() {
+      const checkboxes = document.querySelectorAll('#columnCheckboxes input[type="checkbox"]:checked');
+      if (checkboxes.length === 0) {
+        selectedColumns = ['*'];
+      } else {
+        selectedColumns = Array.from(checkboxes).map(cb => cb.value);
+      }
+      generateSQL();
+    }
+    
+    // Toggle all columns on/off
+    function toggleAllColumns() {
+      const checkboxes = document.querySelectorAll('#columnCheckboxes input[type="checkbox"]');
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+      
+      checkboxes.forEach(cb => {
+        cb.checked = !allChecked;
+      });
+      
+      updateSelectedColumns();
+    }
+
+    // Initialize schema explorer with tables and columns
+    function initializeSchemaExplorer() {
+      const tablesContainer = document.getElementById('schemaTables');
+      
+      // Populate tables list
+      for (const tableName in databaseSchema) {
+        const tableElement = document.createElement('div');
+        tableElement.className = 'schema-table';
+        tableElement.textContent = tableName;
+        tableElement.addEventListener('click', function() {
+          // Highlight selected table
+          document.querySelectorAll('.schema-table').forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Show columns for this table
+          showTableColumns(tableName);
+          
+          // Update query builder with this table
+          selectTableForQueryBuilder(tableName);
+        });
+        
+        tablesContainer.appendChild(tableElement);
+      }
+    
+    }
+
+    // Show columns for a specific table
+    function showTableColumns(tableName) {
+      const columnsContainer = document.getElementById('schemaColumns');
+      columnsContainer.innerHTML = `<h3>${tableName} Columns</h3>`;
+      
+      databaseSchema[tableName].forEach(column => {
+        const columnElement = document.createElement('div');
+        columnElement.className = 'schema-column';
+        columnElement.textContent = column;
+        columnsContainer.appendChild(columnElement);
+      });
+    }
+
+    // Select a table for the query builder
+    function selectTableForQueryBuilder(tableName) {
+      currentTable = tableName;
+      document.getElementById('tableName').value = tableName;
+      updateColumnSelection(tableName);
+      updateColumnDropdowns(tableName);
+      generateSQL();
+    }
+
+    // Update column dropdowns in all modals
+    function updateColumnDropdowns(tableName) {
+      const columns = databaseSchema[tableName] || [];
+      
+      // Filter modal column dropdown
+      const filterColumnSelect = document.getElementById('filterColumnSelect');
+      updateSelectOptions(filterColumnSelect, columns);
+      
+      // Sort modal column dropdown
+      const sortColumnSelect = document.getElementById('sortColumnSelect');
+      updateSelectOptions(sortColumnSelect, columns);
+      
+      // Join modal main column dropdown
+      const joinColumnSelect = document.getElementById('joinColumnSelect');
+      updateSelectOptions(joinColumnSelect, columns);
+      
+      // Join modal table dropdown (excluding current table)
+      const joinTableSelect = document.getElementById('joinTableSelect');
+      const otherTables = Object.keys(databaseSchema).filter(t => t !== tableName);
+      updateSelectOptions(joinTableSelect, otherTables);
+      
+      // Add event listener to update foreign column dropdown when join table changes
+      joinTableSelect.addEventListener('change', function() {
+        const selectedJoinTable = this.value;
+        const joinForeignColumnSelect = document.getElementById('joinForeignColumnSelect');
+        
+        if (selectedJoinTable) {
+          const foreignColumns = databaseSchema[selectedJoinTable] || [];
+          updateSelectOptions(joinForeignColumnSelect, foreignColumns);
+        } else {
+          updateSelectOptions(joinForeignColumnSelect, []);
         }
+      });
+    }
 
-        function removeFilter(button) {
-            button.parentElement.remove();
+    // Helper function to update select options
+    function updateSelectOptions(selectElement, options) {
+      selectElement.innerHTML = '<option value="">Select column</option>';
+      options.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option;
+        opt.textContent = option;
+        selectElement.appendChild(opt);
+      });
+    }
+
+    // Modal functions
+    function openModal(modalId) {
+      document.getElementById(modalId).style.display = "block";
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = "none";
+    }
+
+    // Filter functions
+    function addFilter() {
+      const container = document.getElementById('filtersContainer');
+      const newRow = document.createElement('div');
+      newRow.className = 'filter-row';
+      newRow.innerHTML = `
+        <div class="where-label">AND</div>
+        <select class="filter-column">
+          ${document.getElementById('filterColumnSelect').innerHTML}
+        </select>
+        <select class="filter-operator">
+          <option value="=">=</option>
+          <option value="!=">!=</option>
+          <option value=">">></option>
+          <option value="<"><</option>
+          <option value="LIKE">LIKE</option>
+          <option value="NOT LIKE">NOT LIKE</option>
+          <option value="IN">IN</option>
+          <option value="NOT IN">NOT IN</option>
+        </select>
+        <input type="text" class="filter-value" placeholder="Value">
+        <button class="remove-btn" onclick="removeFilter(this)">×</button>
+      `;
+      container.appendChild(newRow);
+    }
+
+    function removeFilter(button) {
+      const rows = document.querySelectorAll('#filtersContainer .filter-row');
+      if (rows.length > 1) {
+        button.closest('.filter-row').remove();
+      }
+    }
+
+    function applyFilters() {
+      filters = [];
+      const rows = document.querySelectorAll('#filtersContainer .filter-row');
+      
+      rows.forEach((row, index) => {
+        const column = row.querySelector('.filter-column').value;
+        const operator = row.querySelector('.filter-operator').value;
+        const value = row.querySelector('.filter-value').value;
+        
+        if (column && value) {
+          let condition = {
+            column,
+            operator,
+            value
+          };
+          
+          if (index > 0) {
+            condition.logicalOperator = 'AND'; // Default to AND for additional conditions
+          }
+          
+          filters.push(condition);
         }
+      });
+      
+      updateAppliedFiltersDisplay();
+      closeModal('filterModal');
+      generateSQL();
+    }
 
-        function applyFilters() {
-            filters = [];
-            const rows = document.querySelectorAll('#filtersContainer .filter-row');
-            
-            rows.forEach(row => {
-                const table = row.querySelector('.filter-table').value;
-                const column = row.querySelector('.filter-column').value;
-                const operator = row.querySelector('.filter-operator').value;
-                const value = row.querySelector('.filter-value').value;
-                
-                if (column && value) {
-                    filters.push({ table, column, operator, value });
-                }
-            });
-            
-            updateAppliedFiltersDisplay();
-            closeModal('filterModal');
-            generateSQL();
+    function updateAppliedFiltersDisplay() {
+      const container = document.getElementById('appliedFilters');
+      container.innerHTML = '';
+      
+      filters.forEach((filter, index) => {
+        const li = document.createElement('li');
+        li.className = 'applied-filter-item';
+        
+        let displayText = '';
+        if (index === 0) {
+          displayText = `WHERE ${filter.column} ${filter.operator} '${filter.value}'`;
+        } else {
+          displayText = `${filter.logicalOperator || 'AND'} ${filter.column} ${filter.operator} '${filter.value}'`;
         }
+        
+        li.innerHTML = `
+          <span>${displayText}</span>
+          <span class="remove-applied-filter" onclick="removeAppliedFilter(${index})">×</span>
+        `;
+        container.appendChild(li);
+      });
+      
+      document.getElementById('filterCount').textContent = filters.length;
+    }
 
-        function updateAppliedFiltersDisplay() {
-            const container = document.getElementById('appliedFilters');
-            container.innerHTML = '';
-            
-            filters.forEach((filter, index) => {
-                const li = document.createElement('li');
-                li.className = 'applied-filter-item';
-                li.innerHTML = `
-                    <span>${filter.table}.${filter.column} ${filter.operator} ${filter.value}</span>
-                    <span class="remove-applied-filter" onclick="removeAppliedFilter(${index})">×</span>
-                `;
-                container.appendChild(li);
-            });
-            
-            document.getElementById('filterCount').textContent = filters.length;
+    function removeAppliedFilter(index) {
+      filters.splice(index, 1);
+      updateAppliedFiltersDisplay();
+      generateSQL();
+    }
+
+    // Sort functions
+    function addSort() {
+      const container = document.getElementById('sortsContainer');
+      const newRow = document.createElement('div');
+      newRow.className = 'sort-row';
+      newRow.innerHTML = `
+        <div class="where-label">AND</div>
+        <select class="sort-column">
+          ${document.getElementById('sortColumnSelect').innerHTML}
+        </select>
+        <select class="sort-direction">
+          <option value="ASC">ASC</option>
+          <option value="DESC">DESC</option>
+        </select>
+        <button class="remove-btn" onclick="removeSort(this)">×</button>
+      `;
+      container.appendChild(newRow);
+    }
+
+    function removeSort(button) {
+      const rows = document.querySelectorAll('#sortsContainer .sort-row');
+      if (rows.length > 1) {
+        button.closest('.sort-row').remove();
+      }
+    }
+
+    function applySorts() {
+      sorts = [];
+      const rows = document.querySelectorAll('#sortsContainer .sort-row');
+      
+      rows.forEach(row => {
+        const column = row.querySelector('.sort-column').value;
+        const direction = row.querySelector('.sort-direction').value;
+        
+        if (column) {
+          sorts.push({ column, direction });
         }
+      });
+      
+      updateAppliedSortsDisplay();
+      closeModal('sortModal');
+      generateSQL();
+    }
 
-        function removeAppliedFilter(index) {
-            filters.splice(index, 1);
-            updateAppliedFiltersDisplay();
-            generateSQL();
+    function updateAppliedSortsDisplay() {
+      const container = document.getElementById('appliedSorts');
+      container.innerHTML = '';
+      
+      if (sorts.length > 0) {
+        const li = document.createElement('li');
+        li.className = 'applied-sort-item';
+        
+        let displayText = 'ORDER BY ';
+        displayText += sorts.map(sort => `${sort.column} ${sort.direction}`).join(', ');
+        
+        li.innerHTML = `
+          <span>${displayText}</span>
+          <span class="remove-applied-sort" onclick="removeAppliedSorts()">×</span>
+        `;
+        container.appendChild(li);
+      }
+      
+      document.getElementById('sortCount').textContent = sorts.length;
+    }
+
+    function removeAppliedSorts() {
+      sorts = [];
+      updateAppliedSortsDisplay();
+      generateSQL();
+    }
+
+    // Join functions
+    function addJoin() {
+      document.getElementById('noJoinsMessage').style.display = 'none';
+      document.getElementById('joinsList').style.display = 'block';
+      
+      const container = document.getElementById('joinsList');
+      const newRow = document.createElement('div');
+      newRow.className = 'join-row';
+      newRow.innerHTML = `
+        <select class="join-type">
+          <option value="INNER JOIN">INNER JOIN</option>
+          <option value="LEFT JOIN">LEFT JOIN</option>
+          <option value="RIGHT JOIN">RIGHT JOIN</option>
+        </select>
+        <select class="join-table">
+          ${document.getElementById('joinTableSelect').innerHTML}
+        </select>
+        <div class="join-divider">ON</div>
+        <select class="join-column">
+          ${document.getElementById('joinColumnSelect').innerHTML}
+        </select>
+        <select class="join-operator">
+          <option value="=">=</option>
+          <option value="!=">!=</option>
+        </select>
+        <select class="join-foreign-column">
+          <option value="">Joined table column</option>
+        </select>
+        <button class="remove-btn" onclick="removeJoin(this)">×</button>
+      `;
+      container.appendChild(newRow);
+      
+      // Add event listeners for join table change to update foreign columns
+      const joinTableSelect = newRow.querySelector('.join-table');
+      const joinForeignColumnSelect = newRow.querySelector('.join-foreign-column');
+      
+      joinTableSelect.addEventListener('change', function() {
+        const selectedJoinTable = this.value;
+        
+        if (selectedJoinTable) {
+          const foreignColumns = databaseSchema[selectedJoinTable] || [];
+          joinForeignColumnSelect.innerHTML = '<option value="">Select column</option>';
+          foreignColumns.forEach(column => {
+            const opt = document.createElement('option');
+            opt.value = column;
+            opt.textContent = column;
+            joinForeignColumnSelect.appendChild(opt);
+          });
+        } else {
+          joinForeignColumnSelect.innerHTML = '<option value="">Select column</option>';
         }
+      });
+    }
 
-        // Join functions
-        function addJoin() {
-            const container = document.getElementById('joinsContainer');
-            const newRow = document.createElement('div');
-            newRow.className = 'filter-row';
-            newRow.innerHTML = `
-                <select class="join-type">
-                    <option value="INNER JOIN">INNER JOIN</option>
-                    <option value="LEFT JOIN">LEFT JOIN</option>
-                    <option value="RIGHT JOIN">RIGHT JOIN</option>
-                </select>
-                <select class="join-table">
-                    <option value="products">products</option>
-                    <option value="suppliers">suppliers</option>
-                </select>
-                <input type="text" placeholder="ON condition" class="join-condition">
-                <button class="remove-btn" onclick="removeJoin(this)">×</button>
-            `;
-            container.appendChild(newRow);
+    function removeJoin(button) {
+      const rows = document.querySelectorAll('#joinsList .join-row');
+      if (rows.length > 0) {
+        button.closest('.join-row').remove();
+        
+        if (rows.length === 1) { // Last row being removed
+          document.getElementById('noJoinsMessage').style.display = 'block';
+          document.getElementById('joinsList').style.display = 'none';
         }
+      }
+    }
 
-        function removeJoin(button) {
-            button.parentElement.remove();
+    function applyJoins() {
+      joins = [];
+      const rows = document.querySelectorAll('#joinsList .join-row');
+      
+      rows.forEach(row => {
+        const type = row.querySelector('.join-type').value;
+        const table = row.querySelector('.join-table').value;
+        const column = row.querySelector('.join-column').value;
+        const operator = row.querySelector('.join-operator').value;
+        const foreignColumn = row.querySelector('.join-foreign-column').value;
+        
+        if (table && column && foreignColumn) {
+          joins.push({ 
+            type, 
+            table, 
+            condition: `${currentTable}.${column} ${operator} ${table}.${foreignColumn}`
+          });
         }
+      });
+      
+      updateAppliedJoinsDisplay();
+      closeModal('joinModal');
+      generateSQL();
+    }
 
-        function applyJoins() {
-            joins = [];
-            const rows = document.querySelectorAll('#joinsContainer .filter-row');
-            
-            rows.forEach(row => {
-                const type = row.querySelector('.join-type').value;
-                const table = row.querySelector('.join-table').value;
-                const condition = row.querySelector('.join-condition').value;
-                
-                if (table && condition) {
-                    joins.push({ type, table, condition });
-                }
-            });
-            
-            updateAppliedJoinsDisplay();
-            closeModal('joinModal');
-            generateSQL();
-        }
+    function updateAppliedJoinsDisplay() {
+      const container = document.getElementById('appliedJoins');
+      container.innerHTML = '';
+      
+      joins.forEach((join, index) => {
+        const li = document.createElement('li');
+        li.className = 'applied-join-item';
+        li.innerHTML = `
+          <span>${join.type} ${join.table} ON ${join.condition}</span>
+          <span class="remove-applied-join" onclick="removeAppliedJoin(${index})">×</span>
+        `;
+        container.appendChild(li);
+      });
+      
+      document.getElementById('joinCount').textContent = joins.length;
+    }
 
-        function updateAppliedJoinsDisplay() {
-            const container = document.getElementById('appliedJoins');
-            container.innerHTML = '';
-            
-            joins.forEach((join, index) => {
-                const li = document.createElement('li');
-                li.className = 'applied-filter-item';
-                li.innerHTML = `
-                    <span>${join.type} ${join.table} ON ${join.condition}</span>
-                    <span class="remove-applied-filter" onclick="removeAppliedJoin(${index})">×</span>
-                `;
-                container.appendChild(li);
-            });
-            
-            document.getElementById('joinCount').textContent = joins.length;
-        }
+    function removeAppliedJoin(index) {
+      joins.splice(index, 1);
+      updateAppliedJoinsDisplay();
+      generateSQL();
+    }
 
-        function removeAppliedJoin(index) {
-            joins.splice(index, 1);
-            updateAppliedJoinsDisplay();
-            generateSQL();
-        }
+    // SQL Generation
+    function generateSQL() {
+      const table = document.getElementById('tableName').value.trim() || 'categories';
+      const limit = document.getElementById('limit').value || 10;
+      
+      // SELECT clause
+      let selectClause = 'SELECT ' + (selectedColumns.includes('*') ? '*' : selectedColumns.join(', '));
+      
+      // FROM clause
+      let fromClause = ` FROM \`${table}\``;
+      
+      // JOIN clauses
+      let joinClauses = '';
+      joins.forEach(join => {
+        joinClauses += ` ${join.type} \`${join.table}\` ON ${join.condition}`;
+      });
+      
+      // WHERE clause
+      let whereClause = '';
+      if (filters.length > 0) {
+        const conditions = filters.map((filter, index) => {
+          if (index === 0) {
+            return `${filter.column} ${filter.operator} '${filter.value}'`;
+          } else {
+            return `${filter.logicalOperator || 'AND'} ${filter.column} ${filter.operator} '${filter.value}'`;
+          }
+        });
+        whereClause = ' WHERE ' + conditions.join(' ');
+      }
+      
+      // ORDER BY clause
+      let orderByClause = '';
+      if (sorts.length > 0) {
+        orderByClause = ' ORDER BY ' + sorts.map(sort => `${sort.column} ${sort.direction}`).join(', ');
+      }
+      
+      // LIMIT clause
+      const limitClause = ` LIMIT ${limit}`;
+      
+      // Combine all clauses
+      const query = selectClause + fromClause + joinClauses + whereClause + orderByClause + limitClause + ';';
+      
+      document.getElementById('sqlOutput').textContent = query;
+    }
 
-        // SQL Generation
-        function generateSQL() {
-            const table = document.getElementById('tableName').value.trim() || 'categories';
-            const limit = document.getElementById('limit').value || 10;
-            
-            // SELECT clause
-            let selectClause = 'SELECT ' + selectedColumns.join(', ');
-            
-            // FROM clause
-            let fromClause = ` FROM \`${table}\``;
-            
-            // JOIN clauses
-            let joinClauses = '';
-            joins.forEach(join => {
-                joinClauses += ` ${join.type} \`${join.table}\` ON ${join.condition}`;
-            });
-            
-            // WHERE clause
-            let whereClause = '';
-            if (filters.length > 0) {
-                const conditions = filters.map(filter => {
-                    return `\`${filter.table}\`.\`${filter.column}\` ${filter.operator} '${filter.value}'`;
-                });
-                whereClause = ' WHERE ' + conditions.join(' AND ');
-            }
-            
-            // LIMIT clause
-            const limitClause = ` LIMIT ${limit}`;
-            
-            // Combine all clauses
-            const query = selectClause + fromClause + joinClauses + whereClause + limitClause + ';';
-            
-            document.getElementById('sqlOutput').textContent = query;
-        }
-
-        // Copy to clipboard
-        function copySQL() {
-            navigator.clipboard.writeText(document.getElementById('sqlOutput').textContent)
-                .then(() => alert('SQL copied to clipboard!'))
-                .catch(err => alert('Failed to copy: ' + err));
-        }
-
-        // Initialize with one empty row in each modal
-        window.onload = function() {
-            // Add initial empty filter row if none exists
-            if (document.querySelectorAll('#filtersContainer .filter-row').length === 0) {
-                addFilter();
-            }
-            
-            // Add initial empty join row if none exists
-            if (document.querySelectorAll('#joinsContainer .filter-row').length === 0) {
-                addJoin();
-            }
-            
-            generateSQL();
-        };
-    </script>
+    // Copy to clipboard
+    function copySQL() 
+    {
+      navigator.clipboard.writeText(document.getElementById('sqlOutput').textContent)
+        .then(() => alert('SQL copied to clipboard!'))
+        .catch(err => alert('Failed to copy: ' + err));
+    }
+  </script>
 </body>
 </html>
